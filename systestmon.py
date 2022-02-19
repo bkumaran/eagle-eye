@@ -598,7 +598,7 @@ class SysTestMon():
 
         fin_neg_stat = []
         for stat in component["stats_api_list"]:
-            stat_json = self.get_stats(stat, node, component["port"])
+            stat_json = self.get_stats(stat, node, component["port"], use_https)
             neg_stat = self.check_for_negative_stat(stat_json)
             if neg_stat.__len__() != 0:
                 fin_neg_stat.append(neg_stat)
@@ -655,8 +655,10 @@ class SysTestMon():
 
         return goroutine_dump_name, cpupprof_dump_name, heappprof_dump_name
 
-    def get_stats(self, stat, node, port):
+    def get_stats(self, stat, node, port, use_https):
         api = "http://{0}:{1}/{2}".format(node, port, stat)
+        if use_https:
+            api = "https://{0}:{1}/{2}".format(node, int("1" + str(port)), stat)
         json_parsed = {}
 
         status, content, header = self._http_request(api)
