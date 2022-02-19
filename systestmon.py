@@ -989,8 +989,6 @@ class SysTestMon():
                     for node in response["nodes"]:
                         clusternode = {}
                         clusternode["hostname"] = node["hostname"].replace(":8091", "")
-                        if use_https:
-                            clusternode["hostname"] = node["hostname"].replace(":18091", "")
                         clusternode["services"] = node["services"]
                         mem_used = int(node["memoryTotal"]) - int(node["memoryFree"])
                         if node["memoryTotal"]:
