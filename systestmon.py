@@ -908,7 +908,7 @@ class SysTestMon():
                 return "auth: " + base64.decodestring(val[6:])
         return ""
 
-    def _http_request(self, api, method='GET', params='', headers=None, timeout=120):
+    def _http_request(self, api, method='GET', params='', headers=None, timeout=300):
         if not headers:
             headers = self._create_headers()
         end_time = time.time() + timeout
