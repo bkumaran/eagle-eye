@@ -427,22 +427,27 @@ class SysTestMon():
                 epoch_time = int(time.time())
                 command = "/opt/couchbase/bin/couchbase-cli collect-logs-start -c {0} -u {1} -p {2} --all-nodes --upload --upload-host cb-jira.s3.us-east-2.amazonaws.com/logs --customer systestmon-{3}".format(
                     master_node, rest_username, rest_password, epoch_time)
+                self.logger.info("====== Step 1 ======")
                 _, cbcollect_output, std_err = self.execute_command(
                     command, master_node, ssh_username, ssh_password)
                 if std_err:
+                    self.logger.info("====== Step 2 ======")
                     self.logger.error(
                         "Error seen while running cbcollect_info ")
                     self.logger.info(std_err)
                 else:
+                    self.logger.info("====== Step 3 ======")
                     for i in range(len(cbcollect_output)):
                         self.logger.info(cbcollect_output[i])
 
                 while True:
                     command = "/opt/couchbase/bin/couchbase-cli collect-logs-status -c {0} -u {1} -p {2}".format(
                         master_node, rest_username, rest_password)
+                    self.logger.info("====== Step 4 ======")
                     _, cbcollect_output, std_err = self.execute_command(
                         command, master_node, ssh_username, ssh_password)
                     if std_err:
+                        self.logger.info("====== Step 5 ======")
                         self.logger.error(
                             "Error seen while running cbcollect_info ")
                         self.logger.info(std_err)
@@ -450,6 +455,7 @@ class SysTestMon():
                     else:
                         # for i in range(len(cbcollect_output)):
                         #    print cbcollect_output[i]
+                        self.logger.info("====== Step 6 ======")
                         if cbcollect_output[0] == "Status: completed":
                             cbcollect_upload_paths = []
                             for line in cbcollect_output:
