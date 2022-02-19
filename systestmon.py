@@ -204,7 +204,7 @@ class SysTestMon():
         else:
             self.logger = logger
 
-        self.wait_for_cluster_init(master_node)
+        self.wait_for_cluster_init(master_node, use_https)
 
         try:
             self.cluster = self.get_cluster(cb_host)
@@ -237,7 +237,7 @@ class SysTestMon():
             should_cbcollect = False
             message_content = ""
             message_sub = ""
-            node_map = self.get_services_map(master_node, rest_username, rest_password)
+            node_map = self.get_services_map(master_node, rest_username, rest_password, use_https)
             if not node_map:
                 continue
             for component in self.configuration:
@@ -350,9 +350,9 @@ class SysTestMon():
                 # Check if XDCR outgoing mutations in the past hour > threshold
                 if component["component"] == "xdcr":
                     threshold = component["outgoing_mutations_threshold"]
-                    src_buckets = self.get_xdcr_src_buckets(master_node)
+                    src_buckets = self.get_xdcr_src_buckets(master_node, use_https)
                     for src_bucket in src_buckets:
-                        bucket_stats = self.fetch_bucket_xdcr_stats(master_node, src_bucket)['op']['samples'][
+                        bucket_stats = self.fetch_bucket_xdcr_stats(master_node, src_bucket, fetch_bucket_xdcr_stats)['op']['samples'][
                                            'replication_changes_left'][-60:]
                         if all(stat > threshold for stat in bucket_stats):
                             self.logger.warn(
