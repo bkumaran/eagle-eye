@@ -453,8 +453,8 @@ class SysTestMon():
                         self.logger.info(std_err)
                         break
                     else:
-                        # for i in range(len(cbcollect_output)):
-                        #    print cbcollect_output[i]
+                        for i in range(len(cbcollect_output)):
+                           print cbcollect_output[i]
                         self.logger.info("====== Step 6 ======")
                         if cbcollect_output[0] == "Status: completed":
                             cbcollect_upload_paths = []
@@ -465,8 +465,8 @@ class SysTestMon():
                             self.logger.info('\n'.join(cbcollect_upload_paths))
                             message_content = message_content + '\n\ncbcollect logs: \n\n' + '\n'.join(
                                 cbcollect_upload_paths)
-                            # for i in range(len(cbcollect_upload_paths)):
-                            #    print cbcollect_upload_paths[i]
+                            for i in range(len(cbcollect_upload_paths)):
+                               print cbcollect_upload_paths[i]
                             collected = True
                             break
                         elif cbcollect_output[0] == "Status: running":
