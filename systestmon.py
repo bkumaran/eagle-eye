@@ -1109,11 +1109,11 @@ if __name__ == '__main__':
     logger = ast.literal_eval(sys.argv[11])
     should_collect_dumps = sys.argv[12]
     docker_host = sys.argv[13]
+    use_https = sys.argv[14]
     try:
-        cb_host = sys.argv[14] 
+        cb_host = sys.argv[15] 
     except IndexError:
         cb_host = "172.23.104.178"
-    use_https = sys.argv[15]
     SysTestMon().run(master_node, rest_username, rest_password, ssh_username, ssh_password,
                      cbcollect_on_high_mem_cpu_usage, print_all_logs, email_recipients, state_file_dir, run_infinite,
                      logger, should_collect_dumps, docker_host, cb_host, use_https)
