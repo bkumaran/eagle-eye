@@ -887,7 +887,7 @@ class SysTestMon():
             src_buckets.append(repl["source"])
         return src_buckets
 
-    def fetch_bucket_xdcr_stats(self, node, bucket, zoom="day", use_https=False):
+    def fetch_bucket_xdcr_stats(self, node, use_https=False, bucket, zoom="day"):
         api = "http://" + node + ":8091/pools/default/buckets/@xdcr-{0}/stats?zoom={1}".format(bucket, zoom)
         if use_https:
             api = "https://" + node + ":18091/pools/default/buckets/@xdcr-{0}/stats?zoom={1}".format(bucket, zoom)
