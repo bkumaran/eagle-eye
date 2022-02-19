@@ -186,7 +186,7 @@ class SysTestMon():
 
     def run(self, master_node, rest_username, rest_password, ssh_username, ssh_password,
             cbcollect_on_high_mem_cpu_usage, print_all_logs, email_recipients, state_file_dir, run_infinite, logger,
-            should_collect_dumps, docker_host, cb_host):
+            should_collect_dumps, docker_host, cb_host, use_https):
         # Logging configuration
         if not logger:
             self.logger = logging.getLogger("systestmon")
@@ -874,20 +874,23 @@ class SysTestMon():
 
         return should_cbcollect, message_content
 
-    def get_xdcr_src_buckets(self, node):
+    def get_xdcr_src_buckets(self, node, use_https=False):
         src_buckets = []
         api = "http://" + node + ":8091/pools/default/replications"
+        if use_https:
+            api = "https://" + node + ":18091/pools/default/replications"
         status, content, _ = self._http_request(api)
         repls =  json.loads(content)
         for repl in repls:
             src_buckets.append(repl["source"])
         return src_buckets
 
-    def fetch_bucket_xdcr_stats(self, node, bucket, zoom="day"):
+    def fetch_bucket_xdcr_stats(self, node, bucket, zoom="day", use_https=False):
         api = "http://" + node + ":8091/pools/default/buckets/@xdcr-{0}/stats?zoom={1}".format(bucket, zoom)
+        if use_https:
+            api = "https://" + node + ":18091/pools/default/buckets/@xdcr-{0}/stats?zoom={1}".format(bucket, zoom)
         status, content, _ = self._http_request(api)
         return json.loads(content)
-
 
     def _create_headers(self):
         authorization = base64.encodestring('%s:%s' % ("Administrator", "password"))
@@ -969,8 +972,10 @@ class SysTestMon():
                 return False
         return True
 
-    def get_services_map(self, master, rest_username, rest_password):
+    def get_services_map(self, master, rest_username, rest_password, use_https=False):
         cluster_url = "http://" + master + ":8091/pools/default"
+        if use_https:
+            cluster_url = "https://" + master + ":18091/pools/default"
         node_map = []
         retry_count = 5
         while retry_count:
@@ -984,6 +989,8 @@ class SysTestMon():
                     for node in response["nodes"]:
                         clusternode = {}
                         clusternode["hostname"] = node["hostname"].replace(":8091", "")
+                        if use_https:
+                            clusternode["hostname"] = node["hostname"].replace(":18091", "")
                         clusternode["services"] = node["services"]
                         mem_used = int(node["memoryTotal"]) - int(node["memoryFree"])
                         if node["memoryTotal"]:
@@ -1017,8 +1024,10 @@ class SysTestMon():
                     nodelist.append(node["hostname"])
         return nodelist
 
-    def wait_for_cluster_init(self, master_node):
+    def wait_for_cluster_init(self, master_node, use_https=False):
         cluster_url = "http://" + master_node + ":8091/pools/default"
+        if use_https:
+            cluster_url = "https://" + master_node + ":18091/pools/default"
         while True:
             self.logger.info("Waiting for cluster {} init".format(master_node))
             try:
@@ -1104,6 +1113,7 @@ if __name__ == '__main__':
         cb_host = sys.argv[14] 
     except IndexError:
         cb_host = "172.23.104.178"
+    use_https = sys.argv[15]
     SysTestMon().run(master_node, rest_username, rest_password, ssh_username, ssh_password,
                      cbcollect_on_high_mem_cpu_usage, print_all_logs, email_recipients, state_file_dir, run_infinite,
-                     logger, should_collect_dumps, docker_host, cb_host)
+                     logger, should_collect_dumps, docker_host, cb_host, use_https)
