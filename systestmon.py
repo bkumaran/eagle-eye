@@ -914,7 +914,7 @@ class SysTestMon():
         count = 1
         while True:
             try:
-                response, content = httplib2.Http(timeout=timeout).request(api, method,
+                response, content = httplib2.Http(timeout=timeout, disable_ssl_certificate_validation=True).request(api, method,
                                                                            params, headers)
                 if response['status'] in ['200', '201', '202']:
                     return True, content, response
