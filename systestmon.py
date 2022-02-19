@@ -352,7 +352,7 @@ class SysTestMon():
                     threshold = component["outgoing_mutations_threshold"]
                     src_buckets = self.get_xdcr_src_buckets(master_node, use_https)
                     for src_bucket in src_buckets:
-                        bucket_stats = self.fetch_bucket_xdcr_stats(master_node, src_bucket, fetch_bucket_xdcr_stats)['op']['samples'][
+                        bucket_stats = self.fetch_bucket_xdcr_stats(master_node, src_bucket, use_https)['op']['samples'][
                                            'replication_changes_left'][-60:]
                         if all(stat > threshold for stat in bucket_stats):
                             self.logger.warn(
