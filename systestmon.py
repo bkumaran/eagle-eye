@@ -324,7 +324,7 @@ class SysTestMon():
                     if n1ql_nodes:
                         # Check to make sure all nodes are healthy
                         self.logger.info("Checking if all query nodes are healthy")
-                        should_collect, message = self.check_nodes_healthy(nodes=nodes, component=component, rest_username=rest_username, rest_password=rest_password, ssh_username=ssh_username, ssh_password=ssh_password)
+                        should_collect, message = self.check_nodes_healthy(nodes=nodes, component=component, rest_username=rest_username, rest_password=rest_password, ssh_username=ssh_username, ssh_password=ssh_password, use_https=use_https)
                         if should_collect:
                             should_cbcollect = True
                         if not message == '':
@@ -332,7 +332,7 @@ class SysTestMon():
                             message_content = message_content + '\n\n' + message + "\n"
                         # Check system:completed_requests for errors
                         self.logger.info("Checking system:completed requests for errors")
-                        should_collect, message = self.check_completed_requests(nodes=nodes, component=component, rest_username=rest_username, rest_password=rest_password, ssh_username=ssh_username, ssh_password=ssh_password)
+                        should_collect, message = self.check_completed_requests(nodes=nodes, component=component, rest_username=rest_username, rest_password=rest_password, ssh_username=ssh_username, ssh_password=ssh_password, use_https=use_https)
                         if should_collect:
                             should_cbcollect = True
                         if not message == '':
@@ -340,7 +340,7 @@ class SysTestMon():
                             message_content = message_content + '\n\n' + message + "\n"
                         # Check active_requests to make sure that are no more than 1k active requests at a single time
                         self.logger.info("Checking system:active requests for too many requests")
-                        should_collect, message = self.check_active_requests(nodes=nodes, component=component, rest_username=rest_username, rest_password=rest_password, ssh_username=ssh_username, ssh_password=ssh_password)
+                        should_collect, message = self.check_active_requests(nodes=nodes, component=component, rest_username=rest_username, rest_password=rest_password, ssh_username=ssh_username, ssh_password=ssh_password, use_https=use_https)
                         if should_collect:
                             should_cbcollect = True
                         if not message == '':
@@ -679,12 +679,17 @@ class SysTestMon():
         json_output = json.loads(list_to_string)
         return json_output
 
-    def check_nodes_healthy(self, nodes, component, rest_username, rest_password, ssh_username, ssh_password):
+    def check_nodes_healthy(self, nodes, component, rest_username, rest_password, ssh_username, ssh_password, use_https):
         message_content = ''
         should_cbcollect = False
         for node in nodes:
             command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select 1'".format(node,
                                                                                                     component["port"],
+                                                                                                    rest_username,
+                                                                                                    rest_password)
+            if use_https:
+                command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=select 1'".format(node,
+                                                                                                    int("1" + str(component["port"])),
                                                                                                     rest_username,
                                                                                                     rest_password)
             self.logger.info("Running curl: {0}".format(command))
@@ -705,7 +710,7 @@ class SysTestMon():
 
         return should_cbcollect, message_content
 
-    def check_completed_requests(self, nodes, component, rest_username, rest_password, ssh_username, ssh_password):
+    def check_completed_requests(self, nodes, component, rest_username, rest_password, ssh_username, ssh_password, use_https):
         message_content = ''
         should_cbcollect = False
         collection_timestamp = time.time()
@@ -715,6 +720,9 @@ class SysTestMon():
         # Group the errors by the number of occurences of each distinct error message
         command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select count(errors[0].message) as errorCount, errors[0].message from system:completed_requests where errorCount > 0 group by errors[0].message'".format(
             nodes[0], component["port"], rest_username, rest_password)
+        if use_https:
+            command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=select count(errors[0].message) as errorCount, errors[0].message from system:completed_requests where errorCount > 0 group by errors[0].message'".format(
+            nodes[0], int("1" + str(component["port"])), rest_username, rest_password)
         self.logger.info("Running curl: {0}".format(command))
         try:
             occurences, output, std_err = self.execute_command(
@@ -731,6 +739,9 @@ class SysTestMon():
                                 self.logger.info("Error message {0} is a known error, we will skip it and remove it from completed_requests".format(result['message']))
                                 command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=delete from system:completed_requests where errors[0].message = \"{4}\"'".format(
                                     nodes[0], component["port"], rest_username, rest_password, result['message'])
+                                if use_https:
+                                    command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=delete from system:completed_requests where errors[0].message = \"{4}\"'".format(
+                                    nodes[0], int("1" + str(component["port"])), rest_username, rest_password, result['message'])
                                 self.logger.info("Running curl: {0}".format(command))
                                 occurences, output, std_err = self.execute_command(
                                     command, nodes[0], ssh_username, ssh_password)
@@ -745,6 +756,9 @@ class SysTestMon():
                             try:
                                 command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:completed_requests where errors[0].message = \"{4}\"'".format(
                                     nodes[0], component["port"], rest_username, rest_password, result['message'])
+                                if use_https:
+                                    command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:completed_requests where errors[0].message = \"{4}\"'".format(
+                                    nodes[0], int("1" + str(component["port"])), rest_username, rest_password, result['message'])
                                 self.logger.info("Running curl: {0}".format(command))
                                 occurences, output, std_err = self.execute_command(
                                     command, nodes[0], ssh_username, ssh_password)
@@ -760,6 +774,10 @@ class SysTestMon():
                                             command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=delete from system:completed_requests where errors[0].cause.cause.cause = \"{4}\"'".format(
                                                 nodes[0], component["port"], rest_username, rest_password,
                                                 result['errors'][0]['cause']['cause']['cause'])
+                                            if use_https:
+                                                command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=delete from system:completed_requests where errors[0].cause.cause.cause = \"{4}\"'".format(
+                                                nodes[0], int("1" + str(component["port"])), rest_username, rest_password,
+                                                result['errors'][0]['cause']['cause']['cause'])
                                             self.logger.info("Running curl: {0}".format(command))
                                             occurences, output, std_err = self.execute_command(
                                                 command, nodes[0], ssh_username, ssh_password)
@@ -771,6 +789,9 @@ class SysTestMon():
                             #add elifs here to mimic the above to filter more known causes of error messages
                 command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select count(errors[0].message) as errorCount, errors[0].message from system:completed_requests where errorCount > 0 group by errors[0].message'".format(
                     nodes[0], component["port"], rest_username, rest_password)
+                if use_https:
+                    command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=select count(errors[0].message) as errorCount, errors[0].message from system:completed_requests where errorCount > 0 group by errors[0].message'".format(
+                    nodes[0], int("1" + str(component["port"])), rest_username, rest_password)
                 occurences, output, std_err = self.execute_command(
                     command, nodes[0], ssh_username, ssh_password)
                 # Convert the output to a json dict that we can parse
@@ -784,6 +805,9 @@ class SysTestMon():
                             # Look for an example of each error message, and print it out timestamped
                             command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:completed_requests where errors[0].message = \"{4}\" limit 1'".format(
                                 nodes[0], component["port"], rest_username, rest_password, result['message'])
+                            if use_https:
+                                command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:completed_requests where errors[0].message = \"{4}\" limit 1'".format(
+                                nodes[0], int("1" + str(component["port"])), rest_username, rest_password, result['message'])
                             self.logger.info("Running curl: {0}".format(command))
                             occurences, output, std_err = self.execute_command(
                                 command, nodes[0], ssh_username, ssh_password)
@@ -805,6 +829,9 @@ class SysTestMon():
                     # Get the entire completed_requests errors and dump them to a file
                     command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:completed_requests where errorCount > 0 order by requestTime desc'".format(
                         nodes[0], component["port"], rest_username, rest_password)
+                    if use_https:
+                        command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:completed_requests where errorCount > 0 order by requestTime desc'".format(
+                        nodes[0], int("1" + str(component["port"])), rest_username, rest_password)
                     self.logger.info("Running curl: {0}".format(command))
                     try:
                         occurences, output, std_err = self.execute_command(
@@ -829,6 +856,9 @@ class SysTestMon():
 
                             command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=delete from system:completed_requests where errorCount > 0'".format(
                                 nodes[0], component["port"], rest_username, rest_password)
+                            if use_https:
+                                command = "curl https://{0}:{1}/query/service -u {2}:{3} -d 'statement=delete from system:completed_requests where errorCount > 0'".format(
+                                nodes[0], int("1" + str(component["port"])), rest_username, rest_password)
                             self.logger.info("Running curl: {0}".format(command))
                             occurences, output, std_err = self.execute_command(
                                 command, nodes[0], ssh_username, ssh_password)
@@ -845,7 +875,7 @@ class SysTestMon():
 
         return should_cbcollect, message_content
 
-    def check_active_requests(self, nodes, component, rest_username, rest_password, ssh_username, ssh_password):
+    def check_active_requests(self, nodes, component, rest_username, rest_password, ssh_username, ssh_password, use_https):
         message_content = ''
         should_cbcollect = False
         collection_timestamp = time.time()
@@ -854,6 +884,9 @@ class SysTestMon():
         file = "query_active_requests_{0}.txt".format(collection_timestamp)
         command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:active_requests'".format(
             nodes[0], component["port"], rest_username, rest_password)
+        if use_https:
+            command = "curl http://{0}:{1}/query/service -u {2}:{3} -d 'statement=select * from system:active_requests'".format(
+            nodes[0], int("1" + str(component["port"])), rest_username, rest_password)
         self.logger.info("Running curl: {0}".format(command))
         try:
             occurences, output, std_err = self.execute_command(
