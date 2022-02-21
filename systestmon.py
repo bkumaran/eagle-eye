@@ -439,9 +439,9 @@ class SysTestMon():
                     self.logger.info("====== Step 2 End======")
                 else:
                     self.logger.info("====== Step 3 ======")
-                    for i in range(len(cbcollect_output)):
-                        #self.logger.info(cbcollect_output[i])
-                        print(cbcollect_output[i])
+#                     for i in range(len(cbcollect_output)):
+#                         #self.logger.info(cbcollect_output[i])
+#                         print(cbcollect_output[i])
                     self.logger.info("====== Step 3 End ======")
 
                 while True:
