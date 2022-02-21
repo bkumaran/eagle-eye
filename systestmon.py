@@ -50,7 +50,7 @@ class SysTestMon():
             "keywords": ["panic", "fatal", "Error parsing XATTR", "zero", "protobuf.Error", "Encounter planner error",
                          "corruption", "processFlushAbort", "Basic\s[a-zA-Z]\{10,\}", "Menelaus-Auth-User:\[",
                          "Failed to initialize metadata provider", "Waiting for Node Alloc", "found missing page", "invalid last page",
-                         "Storage corrupted and unrecoverable", "ensureMonotonicTs  Align seqno smaller than lastFlushTs", 
+                         "Storage corrupted and unrecoverable", "ensureMonotonicTs  Align seqno smaller than lastFlushTs",
                          "TS falls out of snapshot boundary"],
             "ignore_keywords": ["fatal remote"],
             "check_stats_api": True,
@@ -430,20 +430,24 @@ class SysTestMon():
                 self.logger.info("====== Step 1 ======")
                 _, cbcollect_output, std_err = self.execute_command(
                     command, master_node, ssh_username, ssh_password)
+                self.logger.info("====== Step 1 End======")
                 if std_err:
                     self.logger.info("====== Step 2 ======")
                     self.logger.error(
                         "Error seen while running cbcollect_info ")
                     self.logger.info(std_err)
+                    self.logger.info("====== Step 2 End======")
                 else:
                     self.logger.info("====== Step 3 ======")
                     for i in range(len(cbcollect_output)):
                         self.logger.info(cbcollect_output[i])
+                    self.logger.info("====== Step 3 End ======")
 
                 while True:
+                    self.logger.info("====== Step 4 ======")
                     command = "/opt/couchbase/bin/couchbase-cli collect-logs-status -c {0} -u {1} -p {2}".format(
                         master_node, rest_username, rest_password)
-                    self.logger.info("====== Step 4 ======")
+                    self.logger.info("====== Step 4 End ======")
                     _, cbcollect_output, std_err = self.execute_command(
                         command, master_node, ssh_username, ssh_password)
                     if std_err:
@@ -1150,7 +1154,7 @@ if __name__ == '__main__':
     docker_host = sys.argv[13]
     use_https = sys.argv[14]
     try:
-        cb_host = sys.argv[15] 
+        cb_host = sys.argv[15]
     except IndexError:
         cb_host = "172.23.104.178"
     SysTestMon().run(master_node, rest_username, rest_password, ssh_username, ssh_password,
