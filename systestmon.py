@@ -427,6 +427,7 @@ class SysTestMon():
                 epoch_time = int(time.time())
                 command = "/opt/couchbase/bin/couchbase-cli collect-logs-start -c {0} -u {1} -p {2} --all-nodes --upload --upload-host cb-jira.s3.us-east-2.amazonaws.com/logs --customer systestmon-{3}".format(
                     master_node, rest_username, rest_password, epoch_time)
+                print(command)
                 self.logger.info("====== Step 1 ======")
                 _, cbcollect_output, std_err = self.execute_command(
                     command, master_node, ssh_username, ssh_password)
@@ -439,6 +440,7 @@ class SysTestMon():
                     self.logger.info("====== Step 2 End======")
                 else:
                     self.logger.info("====== Step 3 ======")
+                    print(cbcollect_output)
 #                     for i in range(len(cbcollect_output)):
 #                         #self.logger.info(cbcollect_output[i])
 #                         print(cbcollect_output[i])
