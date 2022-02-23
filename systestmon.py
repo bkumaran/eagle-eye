@@ -429,44 +429,33 @@ class SysTestMon():
                     command = "/opt/couchbase/bin/couchbase-cli collect-logs-start -c https://{0}:18091 -u {1} -p {2} --all-nodes --upload --upload-host cb-jira.s3.us-east-2.amazonaws.com/logs --customer systestmon-{3} --no-ssl-verify".format(
                     master_node, rest_username, rest_password, epoch_time)
                 print(command)
-                self.logger.info("====== Step 1 ======")
                 _, cbcollect_output, std_err = self.execute_command(
                     command, master_node, ssh_username, ssh_password)
-                self.logger.info("====== Step 1 End======")
                 if std_err:
-                    self.logger.info("====== Step 2 ======")
                     self.logger.error(
                         "Error seen while running cbcollect_info ")
                     self.logger.info(std_err)
-                    self.logger.info("====== Step 2 End======")
                 else:
-                    self.logger.info("====== Step 3 ======")
-                    print(cbcollect_output)
-#                     for i in range(len(cbcollect_output)):
-#                         #self.logger.info(cbcollect_output[i])
-#                         print(cbcollect_output[i])
-                    self.logger.info("====== Step 3 End ======")
+                    for i in range(len(cbcollect_output)):
+                        #self.logger.info(cbcollect_output[i])
+                        print(cbcollect_output[i])
 
                 while True:
-                    self.logger.info("====== Step 4 ======")
                     command = "/opt/couchbase/bin/couchbase-cli collect-logs-status -c {0} -u {1} -p {2}".format(
                         master_node, rest_username, rest_password)
                     if use_https:
                         command = "/opt/couchbase/bin/couchbase-cli collect-logs-status -c https://{0}:18091 -u {1} -p {2} --no-ssl-verify".format(
                         master_node, rest_username, rest_password)
-                    self.logger.info("====== Step 4 End ======")
                     _, cbcollect_output, std_err = self.execute_command(
                         command, master_node, ssh_username, ssh_password)
                     if std_err:
-                        self.logger.info("====== Step 5 ======")
                         self.logger.error(
                             "Error seen while running cbcollect_info ")
                         self.logger.info(std_err)
                         break
                     else:
-#                         for i in range(len(cbcollect_output)):
-#                            print cbcollect_output[i]
-                        self.logger.info("====== Step 6 ======")
+                        for i in range(len(cbcollect_output)):
+                           print cbcollect_output[i]
                         if cbcollect_output[0] == "Status: completed":
                             cbcollect_upload_paths = []
                             for line in cbcollect_output:
