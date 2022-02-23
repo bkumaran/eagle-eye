@@ -422,10 +422,11 @@ class SysTestMon():
 
             while should_cbcollect and not collected and time.time() < (start_time + (60 * 60)):
                 self.logger.info("====== RUNNING CBCOLLECT_INFO ======")
-                # command = "/opt/couchbase/bin/cbcollect_info outputfile.zip --multi-node-diag --upload-host=s3.amazonaws.com/bugdb/jira --customer=systestmon-{0}".format(
-                #    timestamp)
                 epoch_time = int(time.time())
                 command = "/opt/couchbase/bin/couchbase-cli collect-logs-start -c {0} -u {1} -p {2} --all-nodes --upload --upload-host cb-jira.s3.us-east-2.amazonaws.com/logs --customer systestmon-{3}".format(
+                    master_node, rest_username, rest_password, epoch_time)
+                if use_https:
+                    command = "/opt/couchbase/bin/couchbase-cli collect-logs-start -c https://{0}:18091 -u {1} -p {2} --all-nodes --upload --upload-host cb-jira.s3.us-east-2.amazonaws.com/logs --customer systestmon-{3} --no-ssl-verify".format(
                     master_node, rest_username, rest_password, epoch_time)
                 print(command)
                 self.logger.info("====== Step 1 ======")
@@ -449,6 +450,9 @@ class SysTestMon():
                 while True:
                     self.logger.info("====== Step 4 ======")
                     command = "/opt/couchbase/bin/couchbase-cli collect-logs-status -c {0} -u {1} -p {2}".format(
+                        master_node, rest_username, rest_password)
+                    if use_https:
+                        command = "/opt/couchbase/bin/couchbase-cli collect-logs-status -c https://{0}:18091 -u {1} -p {2} --no-ssl-verify".format(
                         master_node, rest_username, rest_password)
                     self.logger.info("====== Step 4 End ======")
                     _, cbcollect_output, std_err = self.execute_command(
