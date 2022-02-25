@@ -420,7 +420,7 @@ class SysTestMon():
             collected = False
             start_time = time.time()
 
-            while should_cbcollect and not collected and time.time() < (start_time + (60 * 60)):
+            while should_cbcollect and not collected and time.time() < (start_time + (60 * 10)):
                 self.logger.info("====== RUNNING CBCOLLECT_INFO ======")
                 epoch_time = int(time.time())
                 command = "/opt/couchbase/bin/couchbase-cli collect-logs-start -c {0} -u {1} -p {2} --all-nodes --upload --upload-host cb-jira.s3.us-east-2.amazonaws.com/logs --customer systestmon-{3}".format(
